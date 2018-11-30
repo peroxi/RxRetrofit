@@ -27,7 +27,7 @@ object RetrofitHelper {
     interface GithubAPI {
 
         @GET("users/{user}/repos")
-        fun listRepos(@Path("user") user: String?): Observable<List<Repository>>
+        fun listRepos(@Path("user") user: String?): Observable<List<Repository?>>
 
         @GET("repos/{user}/{repo}/contributors")
         fun listRepoContributors(

@@ -15,7 +15,7 @@ object ApiFacade {
             .observeOn(AndroidSchedulers.mainThread())
     }
 
-    fun fetchRepos(user: String): Observable<List<Repository>> {
+    fun fetchRepos(user: String): Observable<List<Repository?>> {
         return RetrofitHelper.githubAPI.listRepos(user)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
