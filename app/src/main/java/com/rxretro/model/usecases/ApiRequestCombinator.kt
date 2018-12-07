@@ -14,18 +14,23 @@ object ApiRequestCombinator {
     fun fetchContributorsList(user: String, applicationContext: Context): Observable<List<Contributor>> {
         return ApiFacade.fetchRepos(user)
             .flatMapIterable { it }
-            .flatMap { t: Repository? ->  Observable.create<Repository?>{
-                val db = Room.databaseBuilder(
-                    applicationContext,
-                    AppDatabase::class.java, "database-name"
-                ).build()
-                t?.let {
-                    db.repositoryDao().deleteRepository()
-                    db.repositoryDao().insertRepositories(listOf(it)) }
-                if(t != null){
-                    it.onNext(t)
-                }
-                }.subscribeOn(Schedulers.io())}
-            .flatMap { repo -> ApiFacade.fetchContributorsListApi(user, repo.name)}
+            .flatMap { t: Repository? ->
+                Observable.create<Repository?> {
+                    val db = Room.databaseBuilder(
+                        applicationContext,
+                        AppDatabase::class.java, "database-name"
+                    ).build()
+                    t?.let {
+                        db.repositoryDao().deleteRepository()
+                        db.repositoryDao().insertRepositories(listOf(it))
+                    }
+                    if (t != null) {
+                        it.onNext(t)
+                    }
+                    it.onComplete()
+                }.subscribeOn(Schedulers.io())
+            }
+            .flatMap { repo -> ApiFacade.fetchContributorsListApi(user, repo.name) }
+
     }
 }

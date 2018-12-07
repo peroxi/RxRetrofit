@@ -1,9 +1,6 @@
 package com.rxretro.model.dao
 
-import android.arch.persistence.room.Dao
-import android.arch.persistence.room.Delete
-import android.arch.persistence.room.Insert
-import android.arch.persistence.room.Query
+import android.arch.persistence.room.*
 import com.rxretro.model.entity.Contributor
 import com.rxretro.model.entity.Repository
 import io.reactivex.Flowable
@@ -13,12 +10,12 @@ import io.reactivex.Maybe
 interface RepositoryDao {
 
     @Query("SELECT distinct contributor.login from contributor inner join repository on repository.login == :user")
-    fun selectContributorsOfUsersRepositories(user: String?): Flowable<String>
+    fun selectContributorsOfUsersRepositories(user: String?): Flowable<List<String>>
 
-    @Insert
-    fun insertContributors(contributors: List<Contributor>)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertContributors(contributor: Contributor)
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertRepositories(repositories: List<Repository>)
 
     @Query("delete from contributor")

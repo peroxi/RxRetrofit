@@ -7,9 +7,9 @@ import com.google.gson.annotations.SerializedName
 
 @Entity(tableName = "contributor")
 data class Contributor(
-    @PrimaryKey(autoGenerate = true) var uid: Int,
+    @PrimaryKey
     @ColumnInfo(name = "login")
-    @SerializedName("login") val name: String?,
+    @SerializedName("login") val name: String,
     @ColumnInfo(name = "contributions") val contributions: Int
 ) {
 
