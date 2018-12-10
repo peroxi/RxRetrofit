@@ -6,6 +6,7 @@ import android.util.Log
 import com.rxretro.model.dao.AppDatabase
 import com.rxretro.model.entity.Contributor
 import io.reactivex.Observable
+import io.reactivex.ObservableEmitter
 import io.reactivex.schedulers.Schedulers
 
 object EventDataFlattener {
@@ -16,15 +17,19 @@ object EventDataFlattener {
                 .distinct()
                 .observeOn(Schedulers.io())
                 .doOnComplete { emitter.onComplete() }
-                .subscribe { run {
-                    val db = Room.databaseBuilder(
-                        applicationContext,
-                        AppDatabase::class.java, "database-name"
-                    ).build()
-                    db.repositoryDao().insertContributors(it)
-                    Log.i("Cont First put to db: ", it.name)
-                    emitter.onNext(it)
-                } }
+                .subscribe { updateDatabaseContributors(it, applicationContext, emitter) }
         }
+    }
+
+    private fun updateDatabaseContributors(it: Contributor,
+                                           applicationContext: Context,
+                                           emitter: ObservableEmitter<Contributor>) {
+        val db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "database-name"
+        ).build()
+        db.repositoryDao().insertContributors(it)
+        Log.i("Cont First put to db: ", it.name)
+        emitter.onNext(it)
     }
 }

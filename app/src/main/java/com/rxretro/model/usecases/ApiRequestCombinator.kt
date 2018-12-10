@@ -7,6 +7,7 @@ import com.rxretro.model.dao.AppDatabase
 import com.rxretro.model.entity.Contributor
 import com.rxretro.model.entity.Repository
 import io.reactivex.Observable
+import io.reactivex.ObservableEmitter
 import io.reactivex.schedulers.Schedulers
 
 object ApiRequestCombinator {
@@ -16,21 +17,25 @@ object ApiRequestCombinator {
             .flatMapIterable { it }
             .flatMap { t: Repository? ->
                 Observable.create<Repository?> {
-                    val db = Room.databaseBuilder(
-                        applicationContext,
-                        AppDatabase::class.java, "database-name"
-                    ).build()
-                    t?.let {
-                        db.repositoryDao().deleteRepository()
-                        db.repositoryDao().insertRepositories(listOf(it))
-                    }
-                    if (t != null) {
-                        it.onNext(t)
-                    }
-                    it.onComplete()
+                    updateRepositoryDB(it, applicationContext, t)
                 }.subscribeOn(Schedulers.io())
             }
             .flatMap { repo -> ApiFacade.fetchContributorsListApi(user, repo.name) }
 
+    }
+
+    private fun updateRepositoryDB(it: ObservableEmitter<Repository?>, applicationContext: Context, t: Repository?) {
+        val db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "database-name"
+        ).build()
+        t?.let {
+            db.repositoryDao().deleteRepository()
+            db.repositoryDao().insertRepositories(listOf(it))
+        }
+        if (t != null) {
+            it.onNext(t)
+        }
+        it.onComplete()
     }
 }
