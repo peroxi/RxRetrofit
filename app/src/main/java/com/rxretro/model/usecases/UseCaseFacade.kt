@@ -9,6 +9,8 @@ import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.PublishSubject
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 object UseCaseFacade {
 
@@ -19,8 +21,8 @@ object UseCaseFacade {
             .distinct { contributor -> contributor.name }
             .doOnError { Log.e("Cont First", "error : " + it) }
             .doOnComplete {
-                fetchFromDB(applicationContext, user).toObservable()
-                    .subscribe { dbSubject.onNext(it) }
+                GlobalScope.launch { fetchFromDB(applicationContext, user).toObservable()
+                    .subscribe { dbSubject.onNext(it) } }
                 //Looks like it started being called after calling onComplete() to each item of source Observable.
             }
             .observeOn(AndroidSchedulers.mainThread())

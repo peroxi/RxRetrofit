@@ -8,7 +8,8 @@ import com.rxretro.model.entity.Contributor
 import com.rxretro.model.entity.Repository
 import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 object ApiRequestCombinator {
 
@@ -17,8 +18,8 @@ object ApiRequestCombinator {
             .flatMapIterable { it }
             .flatMap { t: Repository? ->
                 Observable.create<Repository?> {
-                    updateRepositoryDB(it, applicationContext, t)
-                }.subscribeOn(Schedulers.io())
+                    GlobalScope.launch { updateRepositoryDB(it, applicationContext, t) }
+                }
             }
             .flatMap { repo -> ApiFacade.fetchContributorsListApi(user, repo.name) }
 
