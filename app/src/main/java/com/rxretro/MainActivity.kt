@@ -4,8 +4,10 @@ import android.annotation.SuppressLint
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import com.rxretro.model.usecases.UseCaseFacade
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -18,9 +20,12 @@ class MainActivity : AppCompatActivity() {
             .doOnNext {
                 //Operations with the LIST of Contributors on UI thread
                 // (like setting/updating RecyclerView/number badge)
+                val text = String.format("Contributors number of %s repositories is %s", user, it.size)
+                contributors_text.text = text
+                progressBar.visibility = View.GONE
                 Toast.makeText(
                     applicationContext,
-                    String.format("Contributors number of %s repositories is %s", user, it.size), Toast.LENGTH_LONG
+                    text, Toast.LENGTH_LONG
                 ).show()
             }
             .flatMapIterable { it }
