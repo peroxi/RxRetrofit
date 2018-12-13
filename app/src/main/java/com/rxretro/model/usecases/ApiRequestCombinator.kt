@@ -1,42 +1,65 @@
 package com.rxretro.model.usecases
 
+import android.annotation.SuppressLint
 import android.arch.persistence.room.Room
 import android.content.Context
-import com.rxretro.model.api.ApiFacade
+import android.util.Log
 import com.rxretro.model.dao.AppDatabase
 import com.rxretro.model.entity.Contributor
 import com.rxretro.model.entity.Repository
-import io.reactivex.Observable
-import io.reactivex.ObservableEmitter
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import com.rxretro.model.retrofit.RetrofitHelper
+import kotlinx.coroutines.*
 
 object ApiRequestCombinator {
 
-    fun fetchContributorsList(user: String, applicationContext: Context): Observable<List<Contributor>> {
-        return ApiFacade.fetchRepos(user)
-            .flatMapIterable { it }
-            .flatMap { t: Repository? ->
-                Observable.create<Repository?> {
-                    GlobalScope.launch { updateRepositoryDB(it, applicationContext, t) }
+    fun fetchContributorsList(user: String, applicationContext: Context): Deferred<List<String>> {
+        return GlobalScope.async(Dispatchers.IO) {
+            val contributors = HashSet<Contributor>()
+            val response = RetrofitHelper.githubAPI.listRepos(user).await()
+            if (response.isSuccessful) {
+                updateRepositoryDB(applicationContext, response.body())
+                response.body()?.iterator()?.forEach {
+                    contributors.addAll(
+                        RetrofitHelper.githubAPI.listRepoContributors(user, it?.name).await().body() ?: listOf()
+                    )
                 }
             }
-            .flatMap { repo -> ApiFacade.fetchContributorsListApi(user, repo.name) }
+            updateDatabaseContributors(contributors.toList(), applicationContext)
+            fetchFromDB(applicationContext, user)
+        }
 
     }
 
-    private fun updateRepositoryDB(it: ObservableEmitter<Repository?>, applicationContext: Context, t: Repository?) {
+    @SuppressLint("CheckResult")
+    private fun fetchFromDB(applicationContext: Context, user: String): List<String> {
+        val db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "database-name"
+        ).build()
+        return db.repositoryDao().selectContributorsOfUsersRepositories(user)
+    }
+
+    private fun updateDatabaseContributors(
+        it: List<Contributor>,
+        applicationContext: Context
+    ) {
+        val db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "database-name"
+        ).build()
+        db.repositoryDao().insertContributors(it)
+        it.iterator().forEach {
+            Log.i("Cont First put to db: ", it.name)
+        }
+    }
+
+    private fun updateRepositoryDB(applicationContext: Context, t: List<Repository?>?) {
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "database-name"
         ).build()
         t?.let {
-            db.repositoryDao().deleteRepository()
-            db.repositoryDao().insertRepositories(listOf(it))
+            db.repositoryDao().insertRepositories(it)
         }
-        if (t != null) {
-            it.onNext(t)
-        }
-        it.onComplete()
     }
 }
