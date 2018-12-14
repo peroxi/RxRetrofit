@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import com.rxretro.model.usecases.ApiRequestCombinator
+import com.rxretro.model.usecases.ApiRequestUsecase
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -19,7 +19,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val user = "eugenp"
-        GlobalScope.launch(Dispatchers.Main) { val listFromDB = ApiRequestCombinator.fetchContributorsList(user, applicationContext).await()
+        GlobalScope.launch(Dispatchers.Main) { val listFromDB = ApiRequestUsecase.fetchContributorsList(user, applicationContext).await()
             listFromDB.run {
                 //Operations with the LIST of Contributors on UI thread
                 // (like setting/updating RecyclerView/number badge)

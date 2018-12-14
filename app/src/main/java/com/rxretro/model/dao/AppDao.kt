@@ -6,7 +6,7 @@ import com.rxretro.model.entity.Contributor
 import com.rxretro.model.entity.Repository
 
 @Dao
-interface RepositoryDao {
+interface AppDao {
 
     @Query("SELECT distinct contributor.login from contributor inner join repository on repository.login == :user")
     fun selectContributorsOfUsersRepositories(user: String?): List<String>

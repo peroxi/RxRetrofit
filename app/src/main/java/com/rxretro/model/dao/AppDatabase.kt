@@ -7,5 +7,5 @@ import com.rxretro.model.entity.Repository
 
 @Database(entities = arrayOf(Repository::class, Contributor::class), version = 1)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun repositoryDao() : RepositoryDao
+    abstract fun repositoryDao() : AppDao
 }
