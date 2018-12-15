@@ -8,30 +8,36 @@ import android.databinding.ObservableField
 import android.util.Log
 import com.rxretro.R
 import com.rxretro.model.usecases.ApiRequestUsecase
+import com.rxretro.model.usecases.reponce.ContributorsResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class MainActivityViewModel(var app: Application): AndroidViewModel(app) {
     private var screenLiveData: MutableLiveData<List<String>>? = null
-    var data: List<String> = listOf()
+    var loadedData: List<String> = listOf()
     var isLoaded = ObservableBoolean(false)
     var loadingMessage = ObservableField<CharSequence>()
     var errorText: String? = null
 
-    fun getScreenData(): MutableLiveData<List<String>>? {
+    fun getScreenData(reload: Boolean): MutableLiveData<List<String>>? {
         if (screenLiveData == null) {
             screenLiveData = MutableLiveData()
-            isLoaded.set(false)
-            loadingMessage.set(app.getText(R.string.loading_message))
-            loadData()
         }
+        isLoaded.set(false)
+        loadingMessage.set(app.getText(R.string.loading_message))
+        loadData(reload)
         return screenLiveData
     }
 
-    private fun loadData() {
+    private fun loadData(reload: Boolean) {
         val user = "eugenp"
-        GlobalScope.launch(Dispatchers.Main) { val responseFromDB = ApiRequestUsecase.fetchContributorsList(user, app).await()
+        GlobalScope.launch(Dispatchers.Main) {
+            val responseFromDB = if(reload) {
+                ApiRequestUsecase.fetchContributorsList(user, app).await()
+            } else {
+                ContributorsResponse(true, loadedData)
+            }
             responseFromDB.run {
                 //Operations with the LIST of Contributors on UI thread
                 // (like setting/updating RecyclerView/number badge)
@@ -47,6 +53,7 @@ class MainActivityViewModel(var app: Application): AndroidViewModel(app) {
                 isLoaded.set(true)
                 screenLiveData?.postValue(data)
                 errorText = errorMessage
+                loadedData = data
                 data.iterator().forEach {
                     //Operations with single Contributor instances on UI thread.
                     Log.i("Cont First internal from db: ", it)
