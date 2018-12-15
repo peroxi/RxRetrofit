@@ -20,16 +20,17 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
+    private var viewModel: MainActivityViewModel? = null
 
-    @SuppressLint("CheckResult")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding: ActivityMainBinding = DataBindingUtil
             .setContentView(this@MainActivity, R.layout.activity_main)
-        val viewModel = ViewModelProvider.AndroidViewModelFactory(application).create(MainActivityViewModel::class.java)
-        viewModel.getScreenData()?.observe(this, object : Observer<List<String>> {
+        viewModel = ViewModelProvider.AndroidViewModelFactory(application).create(MainActivityViewModel::class.java)
+        binding.setVariable(BR.screen, viewModel)
+        viewModel?.getScreenData()?.observe(this, object : Observer<List<String>> {
             override fun onChanged(t: List<String>?) {
-                viewModel.data = t ?: listOf()
+                viewModel?.data = t ?: listOf()
                 binding.setVariable(BR.screen, viewModel)
             }
         })

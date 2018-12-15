@@ -11,12 +11,21 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             tools:context=".view.MainActivity">
+        <android.support.v7.widget.RecyclerView
+                android:layout_width="368dp"
+                android:layout_height="900dp"
+                android:background="@color/colorPrimary"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:data="@{screen.data}"/>
 
         <TextView
                 android:id="@+id/contributors_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Hello World!"
+                android:text="@{screen.loadingMessage}"
+                android:visibility="@{screen.loadingMessage != null}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
@@ -26,18 +35,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/progressBar"
+                android:visibility="@{!screen.isLoaded()}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent"/>
-        <android.support.v7.widget.RecyclerView
-                android:layout_width="368dp"
-                android:layout_height="wrap_content"
-                android:background="@color/colorAccent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:data="@{screen.data}"/>
+                app:layout_constraintTop_toTopOf="parent" app:layout_constraintVertical_bias="0.429"/>
 
     </android.support.constraint.ConstraintLayout>
 </layout>
