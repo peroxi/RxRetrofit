@@ -17,6 +17,7 @@ class MainActivityViewModel(var app: Application): AndroidViewModel(app) {
     var data: List<String> = listOf()
     var isLoaded = ObservableBoolean(false)
     var loadingMessage = ObservableField<CharSequence>()
+    var errorText: String? = null
 
     fun getScreenData(): MutableLiveData<List<String>>? {
         if (screenLiveData == null) {
@@ -45,6 +46,7 @@ class MainActivityViewModel(var app: Application): AndroidViewModel(app) {
                 loadingMessage.set(message)
                 isLoaded.set(true)
                 screenLiveData?.postValue(data)
+                errorText = errorMessage
                 data.iterator().forEach {
                     //Operations with single Contributor instances on UI thread.
                     Log.i("Cont First internal from db: ", it)

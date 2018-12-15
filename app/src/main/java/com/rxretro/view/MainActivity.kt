@@ -32,6 +32,12 @@ class MainActivity : AppCompatActivity() {
             override fun onChanged(t: List<String>?) {
                 viewModel?.data = t ?: listOf()
                 binding.setVariable(BR.screen, viewModel)
+                viewModel?.errorText?.let {
+                    Toast.makeText(
+                        applicationContext,
+                        it, Toast.LENGTH_LONG
+                    ).show()
+                }
             }
         })
     }

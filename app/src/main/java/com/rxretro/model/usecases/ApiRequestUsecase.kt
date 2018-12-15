@@ -6,15 +6,16 @@ import com.rxretro.model.dao.DBRepository.updateDatabaseContributors
 import com.rxretro.model.dao.DBRepository.updateRepositoryDB
 import com.rxretro.model.entity.Contributor
 import com.rxretro.model.retrofit.RetrofitHelper
-import com.rxretro.model.usecases.reponce.ContributorsResponce
+import com.rxretro.model.usecases.reponce.ContributorsResponse
 import kotlinx.coroutines.*
 
 object ApiRequestUsecase {
 
-    fun fetchContributorsList(user: String, applicationContext: Context): Deferred<ContributorsResponce> {
+    fun fetchContributorsList(user: String, applicationContext: Context): Deferred<ContributorsResponse> {
         return GlobalScope.async(Dispatchers.IO) {
             val contributors = HashSet<Contributor>()
             try {
+                var errorMessage: String? = null
                 val response = RetrofitHelper.githubAPI.listRepos(user).await()
                 if (response.isSuccessful) {
                     updateRepositoryDB(applicationContext, response.body())
@@ -24,11 +25,13 @@ object ApiRequestUsecase {
                         )
                     }
                     updateDatabaseContributors(contributors.toList(), applicationContext)
+                } else {
+                    errorMessage = response.message()
                 }
-                ContributorsResponce(response.isSuccessful, fetchFromDB(applicationContext, user))
+                ContributorsResponse(response.isSuccessful, fetchFromDB(applicationContext, user), errorMessage)
             }  catch (e: Exception) {
                 e.printStackTrace()
-                ContributorsResponce(false, fetchFromDB(applicationContext, user))
+                ContributorsResponse(false, fetchFromDB(applicationContext, user), e.message)
             }
         }
     }
