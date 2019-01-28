@@ -5,15 +5,10 @@ import com.rxretro.model.entity.Repository
 import com.rxretro.model.retrofit.RetrofitHelper
 import com.rxretro.model.usecases.entity.ContributorsResponse
 import com.rxretro.model.usecases.entity.RepositoryResponse
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 
 object ApiFacade {
 
-    fun fetchContributorsListApi(user: String?, repoName: String?): Deferred<ContributorsResponse> {
-        return GlobalScope.async(Dispatchers.IO) {
+    suspend fun fetchContributorsListApi(user: String?, repoName: String?): ContributorsResponse {
             var contributors = listOf<Contributor>()
             var errorMessage: String? = null
             try {
@@ -25,16 +20,14 @@ object ApiFacade {
                         errorMessage = message()
                     }
                 }
-                ContributorsResponse(contributors, errorMessage)
+                return ContributorsResponse(contributors, errorMessage)
             } catch (e: Exception) {
                 e.printStackTrace()
-                ContributorsResponse(contributors, errorMessage)
+                return ContributorsResponse(contributors, errorMessage)
             }
-        }
     }
 
-    fun fetchRepos(user: String): Deferred<RepositoryResponse> {
-        return GlobalScope.async(Dispatchers.IO) {
+    suspend fun fetchRepos(user: String): RepositoryResponse {
             var repositories = listOf<Repository?>()
             var errorMessage: String? = null
             try {
@@ -46,11 +39,10 @@ object ApiFacade {
                         errorMessage = message()
                     }
                 }
-                RepositoryResponse(repositories, errorMessage)
+                return RepositoryResponse(repositories, errorMessage)
             } catch (e: Exception) {
                 e.printStackTrace()
-                RepositoryResponse(repositories, errorMessage)
+                return RepositoryResponse(repositories, errorMessage)
             }
-        }
     }
 }

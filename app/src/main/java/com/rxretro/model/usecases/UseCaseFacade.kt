@@ -17,12 +17,12 @@ object UseCaseFacade {
     fun fetchContributorsOfUsersRepositoriesAsync(user: String, applicationContext: Context): Deferred<List<String>> {
         val contributorsGeneralList: MutableList<String> = mutableListOf()
         return GlobalScope.async(Dispatchers.IO) {
-            val reposResponse = ApiFacade.fetchRepos(user).await()
+            val reposResponse = ApiFacade.fetchRepos(user)
             reposResponse.run {
                 if (reposResponse.errorMessage == null) {
                     reposResponse.repositoriesList.iterator().forEach {
                         DBInteractor.updateRepositoryDB(applicationContext, it)
-                        val contributorsResponse = ApiFacade.fetchContributorsListApi(user, it?.name).await()
+                        val contributorsResponse = ApiFacade.fetchContributorsListApi(user, it?.name)
                         contributorsResponse.run {
                             if (errorMessage == null) {
                                 contributors.iterator().forEach { cont: Contributor ->

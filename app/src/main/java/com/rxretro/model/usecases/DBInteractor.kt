@@ -6,10 +6,12 @@ import android.util.Log
 import com.rxretro.model.dao.AppDatabase
 import com.rxretro.model.entity.Contributor
 import com.rxretro.model.entity.Repository
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 
 object DBInteractor {
 
-    fun updateDatabaseContributors(
+    suspend fun updateDatabaseContributors(
         it: Contributor,
         applicationContext: Context
     ) {
@@ -17,26 +19,32 @@ object DBInteractor {
             applicationContext,
             AppDatabase::class.java, "database-name"
         ).build()
-        db.repositoryDao().insertContributors(it)
+        GlobalScope.async {
+            db.repositoryDao().insertContributors(it)
+        }.await()
         Log.i("Cont First put to db: ", it.name)
     }
 
-    fun updateRepositoryDB(applicationContext: Context, t: Repository?) {
+    suspend fun updateRepositoryDB(applicationContext: Context, t: Repository?) {
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "database-name"
         ).build()
-        t?.let {
-            db.repositoryDao().deleteRepository()
-            db.repositoryDao().insertRepositories(listOf(it))
-        }
+        GlobalScope.async {
+            t?.let {
+                db.repositoryDao().deleteRepository()
+                db.repositoryDao().insertRepositories(listOf(it))
+            }
+        }.await()
     }
 
-    fun fetchFromDB(applicationContext: Context, user: String): List<String> {
+    suspend fun fetchFromDB(applicationContext: Context, user: String): List<String> {
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "database-name"
         ).build()
-        return db.repositoryDao().selectContributorsOfUsersRepositories(user)
+        return GlobalScope.async {
+            db.repositoryDao().selectContributorsOfUsersRepositories(user)
+        }.await()
     }
 }
