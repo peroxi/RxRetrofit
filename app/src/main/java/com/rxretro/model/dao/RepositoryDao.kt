@@ -1,16 +1,17 @@
 package com.rxretro.model.dao
 
-import android.arch.persistence.room.*
+import android.arch.persistence.room.Dao
+import android.arch.persistence.room.Insert
+import android.arch.persistence.room.OnConflictStrategy
+import android.arch.persistence.room.Query
 import com.rxretro.model.entity.Contributor
 import com.rxretro.model.entity.Repository
-import io.reactivex.Flowable
-import io.reactivex.Maybe
 
 @Dao
 interface RepositoryDao {
 
     @Query("SELECT distinct contributor.login from contributor inner join repository on repository.login == :user")
-    fun selectContributorsOfUsersRepositories(user: String?): Flowable<List<String>>
+    fun selectContributorsOfUsersRepositories(user: String?): List<String>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertContributors(contributor: Contributor)

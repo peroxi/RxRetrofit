@@ -1,42 +1,46 @@
 package com.rxretro.model.usecases
 
 import android.annotation.SuppressLint
-import android.arch.persistence.room.Room
 import android.content.Context
 import android.util.Log
-import com.rxretro.model.dao.AppDatabase
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Flowable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.subjects.PublishSubject
+import com.rxretro.model.api.ApiFacade
+import com.rxretro.model.entity.Contributor
+import com.rxretro.model.usecases.DBInteractor.fetchFromDB
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
 
 object UseCaseFacade {
 
     @SuppressLint("CheckResult")
-    fun fetchContributorsOfUsersRepositories(user: String, applicationContext: Context): Flowable<List<String>> {
-        val dbSubject: PublishSubject<List<String>> = PublishSubject.create()
-        EventDataFlattener.fetchContributors(user, applicationContext)
-            .distinct { contributor -> contributor.name }
-            .doOnError { Log.e("Cont First", "error : " + it) }
-            .doOnComplete {
-                GlobalScope.launch { fetchFromDB(applicationContext, user).toObservable()
-                    .subscribe { dbSubject.onNext(it) } }
-                //Looks like it started being called after calling onComplete() to each item of source Observable.
+    fun fetchContributorsOfUsersRepositoriesAsync(user: String, applicationContext: Context): Deferred<List<String>> {
+        val contributorsGeneralList: MutableList<String> = mutableListOf()
+        return GlobalScope.async(Dispatchers.IO) {
+            val reposResponse = ApiFacade.fetchRepos(user).await()
+            reposResponse.run {
+                if (reposResponse.errorMessage == null) {
+                    reposResponse.repositoriesList.iterator().forEach {
+                        DBInteractor.updateRepositoryDB(applicationContext, it)
+                        val contributorsResponse = ApiFacade.fetchContributorsListApi(user, it?.name).await()
+                        contributorsResponse.run {
+                            if (errorMessage == null) {
+                                contributors.iterator().forEach { cont: Contributor ->
+                                    if (!contributorsGeneralList.contains(cont.name)) {
+                                        Log.i("Cont First updating Contributors DB starts for ", cont.name)
+                                        DBInteractor.updateDatabaseContributors(cont, applicationContext)
+                                        contributorsGeneralList.add(cont.name)
+                                        Log.i("Cont First update Contributors DB complete ", cont.name)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    fetchFromDB(applicationContext, user)
+                } else {
+                    fetchFromDB(applicationContext, user)
+                }
             }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { contributor -> Log.i("Cont First", contributor.name) }
-        return dbSubject.toFlowable(BackpressureStrategy.BUFFER)
-    }
-
-    @SuppressLint("CheckResult")
-    private fun fetchFromDB(applicationContext: Context, user: String): Flowable<List<String>> {
-        val db = Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java, "database-name"
-        ).build()
-        return db.repositoryDao().selectContributorsOfUsersRepositories(user)
-            .observeOn(AndroidSchedulers.mainThread())
+        }
     }
 }
