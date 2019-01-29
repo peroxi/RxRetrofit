@@ -6,7 +6,7 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import com.rxretro.model.usecases.UseCaseFacade
+import com.rxretro.model.usecases.ContributorsOfUsersRepositoriesUseCase
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -20,7 +20,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val user = "eugenp"
         GlobalScope.launch(Dispatchers.Main) {
-            val response = UseCaseFacade.fetchContributorsOfUsersRepositoriesAsync(user, applicationContext).await()
+            val response = ContributorsOfUsersRepositoriesUseCase.fetchContributorsOfUsersRepositoriesAsync(
+                user,
+                applicationContext
+            ).await()
             response.run {
                 //Operations with the LIST of Contributors on UI thread
                 // (like setting/updating RecyclerView/number badge)
