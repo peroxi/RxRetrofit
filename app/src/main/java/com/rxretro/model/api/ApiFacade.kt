@@ -20,10 +20,10 @@ object ApiFacade {
                         errorMessage = message()
                     }
                 }
-                return ContributorsResponse(contributors, errorMessage)
+                return ContributorsResponse(contributors, listOf(), errorMessage)
             } catch (e: Exception) {
                 e.printStackTrace()
-                return ContributorsResponse(contributors, errorMessage)
+                return ContributorsResponse(contributors, listOf(), errorMessage)
             }
     }
 
