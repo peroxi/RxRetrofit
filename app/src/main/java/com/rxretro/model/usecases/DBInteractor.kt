@@ -38,7 +38,7 @@ object DBInteractor {
         }.await()
     }
 
-    suspend fun fetchFromDB(applicationContext: Context, user: String): List<String> {
+    suspend fun fetchFromDB(applicationContext: Context, user: String): List<Contributor> {
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "database-name"

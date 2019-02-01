@@ -10,6 +10,7 @@ import android.widget.Toast
 import com.rxretro.BR
 import com.rxretro.R
 import com.rxretro.databinding.ActivityMainBinding
+import com.rxretro.model.entity.Contributor
 import com.rxretro.viewmodel.MainActivityViewModel
 
 class MainActivity : AppCompatActivity() {
@@ -24,8 +25,9 @@ class MainActivity : AppCompatActivity() {
         binding.setVariable(BR.screen, viewModel)
 
         val user = "eugenp"
-        viewModel?.getActivityData(savedInstanceState == null, user)?.observe(this, object : Observer<List<String>> {
-            override fun onChanged(t: List<String>?) {
+        viewModel?.getActivityData(savedInstanceState == null, user)
+            ?.observe(this, object : Observer<List<Contributor>> {
+                override fun onChanged(t: List<Contributor>?) {
                 binding.setVariable(BR.screen, viewModel)
                 viewModel?.run {
                     Toast.makeText(

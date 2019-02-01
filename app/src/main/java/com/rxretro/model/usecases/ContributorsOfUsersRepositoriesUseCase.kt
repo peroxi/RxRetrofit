@@ -16,7 +16,10 @@ import kotlinx.coroutines.async
 object ContributorsOfUsersRepositoriesUseCase {
 
     @SuppressLint("CheckResult")
-    fun fetchContributorsOfUsersRepositoriesAsync(user: String, applicationContext: Context): Deferred<List<String>> {
+    fun fetchContributorsOfUsersRepositoriesAsync(
+        user: String,
+        applicationContext: Context
+    ): Deferred<List<Contributor>> {
         val contributorsGeneralList: MutableList<String> = mutableListOf()
         return GlobalScope.async(Dispatchers.IO) {
             val reposResponse = ApiFacade.fetchRepos(user)
@@ -29,7 +32,7 @@ object ContributorsOfUsersRepositoriesUseCase {
         contributorsGeneralList: MutableList<String>,
         user: String,
         applicationContext: Context
-    ): List<String> {
+    ): List<Contributor> {
         when (reposResponse.errorMessage) {
             null -> {
                 reposResponse.repositoriesList.iterator().forEach {

@@ -10,7 +10,8 @@ data class Contributor(
     @PrimaryKey
     @ColumnInfo(name = "login")
     @SerializedName("login") val name: String,
-    @ColumnInfo(name = "contributions") val contributions: Int
+    @ColumnInfo(name = "avatar_url") val avatar_url: String?,
+    @ColumnInfo(name = "contributions") val contributions: Int?
 ) {
 
     override fun toString(): String {
